@@ -355,15 +355,14 @@ def render_media_html(media_type, media_data):
     if not media_type or not media_data:
         return ""
     if media_type in ("image_url", "image_data"):
-        img_style = "width:100%; aspect-ratio:1/1; object-fit:cover; display:block;"
         src = html.escape(media_data) if media_type == "image_url" else media_data
-        return f'<img src="{src}" style="{img_style}" />'
+        return f'<img src="{src}" style="width:100%; height:auto; display:block;" />'
     elif media_type in ("video_url", "video_data"):
         if media_type == "video_url":
             embed = youtube_embed_url(media_data)
             if embed:
                 return (
-                    f'<iframe width="100%" height="280" src="{html.escape(embed)}" '
+                    f'<iframe width="100%" height="315" src="{html.escape(embed)}" '
                     f'frameborder="0" allowfullscreen style="display:block; border-radius:4px;"></iframe>'
                 )
             src = html.escape(media_data)
@@ -371,7 +370,7 @@ def render_media_html(media_type, media_data):
             src = media_data
         return (
             f'<video src="{src}" controls '
-            f'style="width:100%; max-height:300px; border-radius:4px; display:block;"></video>'
+            f'style="width:100%; height:auto; border-radius:4px; display:block;"></video>'
         )
     return ""
 
