@@ -753,7 +753,7 @@ if not st.session_state.feed_unlocked:
     show_post_form(key_prefix="pre_")
 
     st.markdown("---")
-    st.subheader("Fertig mit Post erstellen? Dann hier Passwort eingeben.")
+    st.subheader("Finished writing your post? Enter password here.")
     feed_pw = st.text_input("Feed password", type="password", key="feed_pw_input")
     if st.button("Unlock feed", use_container_width=True, type="primary", key="unlock_btn"):
         if feed_pw == FEED_PASSWORD:
