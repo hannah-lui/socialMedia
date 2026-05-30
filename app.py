@@ -493,12 +493,12 @@ def show_post_form(key_prefix=""):
             uploaded = st.file_uploader(
                 "Upload image",
                 type=["jpg", "jpeg", "png", "gif", "webp"],
-                help="Maximum 2 MB",
+                help="Maximum 10 MB",
                 key=f"{key_prefix}upload_img",
             )
             if uploaded is not None:
-                if uploaded.size > 2 * 1024 * 1024:
-                    st.error("Image too large. Maximum size is 2 MB.")
+                if uploaded.size > 10 * 1024 * 1024:
+                    st.error("Image too large. Maximum size is 10 MB.")
                     uploaded = None
                 else:
                     file_bytes = uploaded.read()
@@ -512,12 +512,12 @@ def show_post_form(key_prefix=""):
             uploaded_video = st.file_uploader(
                 "Upload video",
                 type=["mp4", "mov", "webm", "m4v"],
-                help="Maximum 20 MB",
+                help="Maximum 50 MB — for larger videos use a YouTube link instead",
                 key=f"{key_prefix}upload_video",
             )
             if uploaded_video is not None:
-                if uploaded_video.size > 20 * 1024 * 1024:
-                    st.error("Video too large. Maximum size is 20 MB.")
+                if uploaded_video.size > 50 * 1024 * 1024:
+                    st.error("Video too large. Maximum size is 50 MB.")
                     uploaded_video = None
                 else:
                     file_bytes = uploaded_video.read()
