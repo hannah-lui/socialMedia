@@ -130,6 +130,8 @@ if "show_comments" not in st.session_state:
     st.session_state.show_comments = {}
 if "admin_unlocked" not in st.session_state:
     st.session_state.admin_unlocked = False
+if "just_posted" not in st.session_state:
+    st.session_state.just_posted = False
 
 # ── Global CSS ────────────────────────────────────────────────────────────────
 st.markdown("""
@@ -414,6 +416,10 @@ def render_post_card(acc, content, media_type, media_data):
 
 # ── Post creation form ────────────────────────────────────────────────────────
 def show_post_form(key_prefix=""):
+    if st.session_state.get("just_posted"):
+        st.success("✅ Your post was shared successfully!")
+        st.session_state.just_posted = False
+
     col_form, col_preview = st.columns([1, 1])
 
     media_type_val = None
@@ -545,6 +551,16 @@ def show_post_form(key_prefix=""):
                     media_type_val,
                     media_data_val,
                 )
+                for _key in [
+                    f"{key_prefix}content",
+                    f"{key_prefix}media_option",
+                    f"{key_prefix}img_url",
+                    f"{key_prefix}vid_url",
+                    f"{key_prefix}upload_img",
+                    f"{key_prefix}upload_video",
+                ]:
+                    st.session_state.pop(_key, None)
+                st.session_state.just_posted = True
                 st.session_state.show_extra_form = False
                 st.session_state.post_count += 1
                 st.session_state.account_name = account_name
