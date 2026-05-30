@@ -3,6 +3,7 @@ import html
 import os
 import re
 import sqlite3
+import time
 import uuid
 from datetime import datetime
 
@@ -748,35 +749,27 @@ st.title("📱 Course Social Media Feed")
 
 # ── Before feed: post creation + unlock ──────────────────────────────────────
 if not st.session_state.feed_unlocked:
-    post_count = st.session_state.post_count
+    st.subheader("Create your post")
+    show_post_form(key_prefix="pre_")
 
-    if post_count == 0:
-        st.subheader("Create your first post")
-        st.caption("Write your post first — you can unlock the feed afterwards.")
-        show_post_form(key_prefix="pre_")
-    else:
-        st.success("Post created! You can now unlock the feed or create another post.")
-
-        if not st.session_state.show_extra_form:
-            if st.button("Create another post", key="extra_post_btn"):
-                st.session_state.show_extra_form = True
-                st.rerun()
+    st.markdown("---")
+    st.subheader("Fertig mit Post erstellen? Dann hier Passwort eingeben.")
+    feed_pw = st.text_input("Feed password", type="password", key="feed_pw_input")
+    if st.button("Unlock feed", use_container_width=True, type="primary", key="unlock_btn"):
+        if feed_pw == FEED_PASSWORD:
+            st.session_state.feed_unlocked = True
+            st.rerun()
         else:
-            show_post_form(key_prefix=f"extra{post_count}_")
-
-        st.markdown("---")
-        st.subheader("Unlock the feed")
-        st.write("Enter your teacher's password to see all posts.")
-        feed_pw = st.text_input("Feed password", type="password", key="feed_pw_input")
-        if st.button("Unlock feed", use_container_width=True, type="primary", key="unlock_btn"):
-            if feed_pw == FEED_PASSWORD:
-                st.session_state.feed_unlocked = True
-                st.rerun()
-            else:
-                st.error("Wrong password — please try again.")
+            st.error("Wrong password — please try again.")
 
 # ── Feed ──────────────────────────────────────────────────────────────────────
 else:
+    if "last_refresh" not in st.session_state:
+        st.session_state.last_refresh = time.time()
+    if time.time() - st.session_state.last_refresh > 30:
+        st.session_state.last_refresh = time.time()
+        st.rerun()
+
     st.subheader("Class Feed")
 
     with st.expander("➕ Create another post"):
