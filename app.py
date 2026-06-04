@@ -26,6 +26,7 @@ ACCOUNT_LABEL = "Account name (fictional)"
 
 # ── Database ─────────────────────────────────────────────────────────────────
 DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "social.db")
+PICTURES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Pictures")
 
 
 def get_conn():
@@ -452,15 +453,15 @@ def show_post_form(key_prefix=""):
         st.markdown("**Media** (optional)")
         media_option = st.radio(
             "Add media",
-            ["No media", "Image URL", "Video URL", "Upload image", "Upload video"],
+            ["No media", "Image Link", "Video Link", "Upload image", "Upload video", "Example Pictures"],
             horizontal=True,
             label_visibility="collapsed",
             key=f"{key_prefix}media_option",
         )
 
-        if media_option == "Image URL":
+        if media_option == "Image Link":
             img_url = st.text_input(
-                "Image URL", placeholder="https://example.com/photo.jpg",
+                "Image Link", placeholder="https://example.com/photo.jpg",
                 key=f"{key_prefix}img_url",
             )
             if img_url.strip():
@@ -468,9 +469,9 @@ def show_post_form(key_prefix=""):
                 media_data_val = img_url.strip()
                 st.image(img_url.strip(), caption="Preview", use_container_width=True)
 
-        elif media_option == "Video URL":
+        elif media_option == "Video Link":
             vid_url = st.text_input(
-                "Video URL",
+                "Video Link",
                 placeholder="YouTube link or direct video URL",
                 help="youtube.com/watch?v=… · youtu.be/… · or direct .mp4",
                 key=f"{key_prefix}vid_url",
@@ -526,6 +527,34 @@ def show_post_form(key_prefix=""):
                     media_type_val = "video_data"
                     st.video(uploaded_video)
 
+        elif media_option == "Example Pictures":
+            supported = {".png", ".jpg", ".jpeg", ".gif", ".webp"}
+            picture_files = sorted([
+                f for f in os.listdir(PICTURES_DIR)
+                if os.path.splitext(f)[1].lower() in supported
+            ]) if os.path.isdir(PICTURES_DIR) else []
+
+            if not picture_files:
+                st.info("No Pictures found.")
+            else:
+                labels = [os.path.splitext(f)[0].replace("_", " ") for f in picture_files]
+                selected_label = st.selectbox(
+                    "Select Picture", labels, key=f"{key_prefix}example_img"
+                )
+                selected_file = picture_files[labels.index(selected_label)]
+                selected_path = os.path.join(PICTURES_DIR, selected_file)
+                with open(selected_path, "rb") as f:
+                    file_bytes = f.read()
+                ext = os.path.splitext(selected_file)[1].lower()
+                mime_map = {
+                    ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
+                    ".gif": "image/gif", ".webp": "image/webp",
+                }
+                mime = mime_map.get(ext, "image/png")
+                b64 = base64.b64encode(file_bytes).decode()
+                media_data_val = f"data:{mime};base64,{b64}"
+                media_type_val = "image_data"
+
         if st.button("Post", use_container_width=True, type="primary", key=f"{key_prefix}submit"):
             errors = []
             account_name = raw_account.strip()
@@ -557,6 +586,7 @@ def show_post_form(key_prefix=""):
                     f"{key_prefix}vid_url",
                     f"{key_prefix}upload_img",
                     f"{key_prefix}upload_video",
+                    f"{key_prefix}example_img",
                 ]:
                     st.session_state.pop(_key, None)
                 st.session_state.just_posted = True
