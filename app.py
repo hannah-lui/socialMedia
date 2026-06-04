@@ -139,6 +139,12 @@ st.markdown("""
 <style>
 .stButton > button { min-height: 44px; border-radius: 8px; }
 @media (min-width: 900px) { .block-container { max-width: 820px !important; } }
+.ig-media-img {
+    width: 100% !important;
+    max-width: none !important;
+    height: auto !important;
+    display: block !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -357,7 +363,7 @@ def render_media_html(media_type, media_data):
         return ""
     if media_type in ("image_url", "image_data"):
         src = html.escape(media_data) if media_type == "image_url" else media_data
-        return f'<img src="{src}" style="width:100%; height:auto; display:block;" />'
+        return f'<img src="{src}" class="ig-media-img" style="width:100%; height:auto; display:block;" />'
     elif media_type in ("video_url", "video_data"):
         if media_type == "video_url":
             embed = youtube_embed_url(media_data)
@@ -831,38 +837,40 @@ else:
     for post in posts:
         pid, platform, acc, title, content, created, media_type, media_data = post
 
-        card_html = render_post_card(acc, content, media_type, media_data)
-        st.markdown(card_html, unsafe_allow_html=True)
+        _, col_post, _ = st.columns([1, 5, 1])
+        with col_post:
+            card_html = render_post_card(acc, content, media_type, media_data)
+            st.markdown(card_html, unsafe_allow_html=True)
 
-        render_interaction_buttons(pid, st.session_state.session_id)
+            render_interaction_buttons(pid, st.session_state.session_id)
 
-        show_key = f"show_comments_{pid}"
-        if st.session_state.show_comments.get(show_key, False):
-            post_comments = db_get_comments(pid)
-            if post_comments:
-                render_comment_thread(
-                    post_comments, comment_mode, pid,
-                    st.session_state.session_id,
-                )
-            else:
-                st.caption("No comments yet.")
+            show_key = f"show_comments_{pid}"
+            if st.session_state.show_comments.get(show_key, False):
+                post_comments = db_get_comments(pid)
+                if post_comments:
+                    render_comment_thread(
+                        post_comments, comment_mode, pid,
+                        st.session_state.session_id,
+                    )
+                else:
+                    st.caption("No comments yet.")
 
-            with st.form(key=f"comment_form_{pid}", clear_on_submit=True):
-                new_comment = st.text_area(
-                    "Add a comment",
-                    max_chars=500,
-                    placeholder="Add a comment…",
-                    label_visibility="collapsed",
-                )
-                if st.form_submit_button("Post", use_container_width=True):
-                    if new_comment.strip():
-                        db_add_comment(
-                            pid,
-                            st.session_state.account_name or "Anonymous",
-                            new_comment.strip(),
-                        )
-                        st.rerun()
-                    else:
-                        st.error("Comment cannot be empty.")
+                with st.form(key=f"comment_form_{pid}", clear_on_submit=True):
+                    new_comment = st.text_area(
+                        "Add a comment",
+                        max_chars=500,
+                        placeholder="Add a comment…",
+                        label_visibility="collapsed",
+                    )
+                    if st.form_submit_button("Post", use_container_width=True):
+                        if new_comment.strip():
+                            db_add_comment(
+                                pid,
+                                st.session_state.account_name or "Anonymous",
+                                new_comment.strip(),
+                            )
+                            st.rerun()
+                        else:
+                            st.error("Comment cannot be empty.")
 
         st.write("")
